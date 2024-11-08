@@ -47,13 +47,13 @@ class LSTM(nn.Module):
 
 
 def main():
-    true_data = pd.read_csv(r'D:\workspace\data\time\ChinaBank.csv')  # 填你自己的数据地址
+    true_data = pd.read_csv(r'D:\workspace\data\time\AirPassengers.csv')  # 填你自己的数据地址
 
-    target = 'Close'
+    target = '#Passengers'
 
     # 这里加一些数据的预处理, 最后需要的格式是pd.series
 
-    true_data = np.array(true_data['Close'])
+    true_data = np.array(true_data[target])
 
     # 定义窗口大小
     test_data_size = 32
@@ -82,7 +82,7 @@ def main():
     loss_function = nn.MSELoss()
     optimizer = torch.optim.Adam(lstm_model.parameters(), lr=0.001)
     epochs = 10
-    Train = False  # 训练还是预测
+    Train = True  # 训练还是预测
 
     if Train:
         losss = []
