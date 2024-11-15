@@ -82,11 +82,13 @@ def train(df):
     split_index = int(len(data_scaled) * split_ratio)
     X_train, y_train = create_sequences(data_scaled[:split_index], seq_length)
     X_test, y_test = create_sequences(data_scaled[split_index:], seq_length)
-    print(X.shape, y.shape)
+    print(f"data_scaled.shape: {data_scaled.shape} split_index: {split_index}\n"
+          f"X_train.shape: {X_train.shape} y_train.shape: {y_train.shape}\n"
+          f"X_test.shape: {X_test.shape} y_test.shape: {y_test.shape}")
 
     # 转换为 PyTorch 张量
-    X_train = torch.tensor(X, dtype=torch.float32)
-    y_train = torch.tensor(y, dtype=torch.float32)
+    X_train = torch.tensor(X_train, dtype=torch.float32)
+    y_train = torch.tensor(y_train, dtype=torch.float32)
 
     # 构建数据加载器
     batch_size = 16
@@ -112,7 +114,7 @@ def train(df):
         # break
 
     # 训练模型
-    epochs = 100
+    epochs = 1000
     losses = []
 
     for epoch in range(epochs):
@@ -140,7 +142,8 @@ def train(df):
     # 模型预测
     model.eval()
     with torch.no_grad():
-        predictions = model(X_train.to(device)).cpu().numpy()
+        predictions = model(torch.tensor(X_test, dtype=torch.float32).to(device)
+                            ).cpu().numpy()
 
     # 可视化原始数据的趋势
     plt.figure(figsize=(14, 8))
@@ -154,8 +157,9 @@ def train(df):
 
     # 可视化预测结果和真实值对比
     plt.figure(figsize=(14, 8))
-    plt.plot(df.index[seq_length:], y, label="True Temperature", color="blue")
-    plt.plot(df.index[seq_length:], predictions, label="Predicted Temperature", color="orange")
+    print(split_index, seq_length, split_index-seq_length, len(df.index[split_index:]), len(y_test))
+    plt.plot(df.index[split_index: len(df)-seq_length], y_test, label="True Temperature", color="blue")
+    plt.plot(df.index[split_index: len(df)-seq_length], predictions, label="Predicted Temperature", color="orange")
     plt.title("Prediction vs True Temperature")
     plt.xlabel("Date")
     plt.ylabel("Temperature")
@@ -163,7 +167,7 @@ def train(df):
     plt.show()
 
     # 误差分布图
-    errors = y - predictions.flatten()
+    errors = y_test - predictions.flatten()
     plt.figure(figsize=(10, 6))
     plt.hist(errors, bins=30, color="purple", alpha=0.7)
     plt.title("Prediction Error Distribution")
